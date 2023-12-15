@@ -142,8 +142,8 @@ async function main(feePayer: Keypair) {
     console.info("+==== Transferring... ====+");
     await transferSendAndConfirm({
         plan: membership.publicKey,
-        wallet: systemWallet.publicKey,
-        assocTokenAccount: systemATA,
+        wallet: userWallet.publicKey,
+        assocTokenAccount: userATA,
         mint: mint.publicKey,
         source: systemATA,
         destination: userATA,
