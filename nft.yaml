@@ -1,0 +1,136 @@
+cidl: "0.8"
+info:
+  name: nft_membership
+  title: Membership NFT
+  version: 0.0.1
+  license:
+    name: Unlicense
+    identifier: Unlicense
+types:
+  Membership:
+    solana:
+      seeds:
+        - name: "membership"
+        - name: plan
+          type: sol:pubkey 
+    fields:
+      - name: name
+        type: string
+        solana:
+          attributes: [ cap:16 ]
+      - name: short_description
+        type: string
+        solana:
+          attributes: [ cap:255 ]
+      - name: price
+        type: u64
+
+  Subscription:
+    solana:
+      seeds:
+        - name: "subscription"
+        - name: plan
+          type: sol:pubkey 
+        - name: mint
+          type: sol:pubkey
+    fields:
+      - name: name
+        type: string
+        solana:
+          attributes: [ cap:16 ]
+      - name: short_description
+        type: string
+        solana:
+          attributes: [ cap:255 ]
+      - name: expiry
+        type: u64
+      - name: mint
+        type: sol:pubkey
+      - name: assoc_account
+        type: rs:option<sol:pubkey>
+methods:
+  - name: addPlan
+    inputs:
+      - name: plan
+        type: sol:pubkey
+      - name: membership
+        type: Membership
+        solana:
+          attributes: [ init ]
+          seeds:
+            plan: plan
+      - name: name
+        type: string
+      - name: short_description
+        type: string
+      - name: price
+        type: u64
+  - name: mint
+    uses:
+      - csl_spl_token.initialize_mint2
+      - csl_spl_assoc_token.create
+      - csl_spl_token.mint_to
+      - csl_spl_token.set_authority
+    inputs:
+      - name: plan
+        type: sol:pubkey
+      - name: mint
+        type: csl_spl_token.Mint
+        solana:
+          attributes: [ init ]
+      - name: membership
+        type: Membership
+        solana:
+          seeds:
+            plan: plan
+      - name: subscription
+        type: Subscription
+        solana:
+          attributes: [ init ]
+          seeds:
+            plan: plan
+            mint: mint
+  - name: transfer
+    uses:
+      - csl_spl_assoc_token.create
+      - csl_spl_token.transfer_checked
+    inputs:
+      - name: plan
+        type: sol:pubkey
+      - name: mint
+        type: csl_spl_token.Mint
+      - name: subscription
+        type: Subscription
+        solana:
+          attributes: [ mut ]
+          seeds:
+            plan: plan
+            mint: mint
+  - name: burn
+    uses:
+      - csl_spl_token.burn
+    inputs:
+      - name: plan
+        type: sol:pubkey
+      - name: mint
+        type: csl_spl_token.Mint
+      - name: subscription
+        type: Subscription
+        solana:
+          attributes: [ close ]
+          seeds:
+            plan: plan
+            mint: mint
+  - name: extend_expiry
+    inputs:
+      - name: plan
+        type: sol:pubkey
+      - name: mint
+        type: csl_spl_token.Mint
+      - name: subscription
+        type: Subscription
+        solana:
+          attributes: [ mut ]
+          seeds:
+            plan: plan
+            mint: mint
